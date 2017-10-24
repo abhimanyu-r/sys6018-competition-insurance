@@ -35,6 +35,6 @@ unnormalized.gini.index = function(ground.truth, predicted.probabilities) {
 normalized.gini.index = function(ground.truth, predicted.probabilities) {
   
   model.gini.index = unnormalized.gini.index(ground.truth, predicted.probabilities)
-  optimal.gini.index = unnormalized.gini(ground.truth, ground.truth)
+  optimal.gini.index = unnormalized.gini.index(ground.truth, ground.truth)
   return(model.gini.index / optimal.gini.index)
 }

@@ -17,7 +17,7 @@ for(name in colnames(train)){
 }
 
 train$target <- as.factor(train$target)
-rf <- randomForest(target ~ . - id, train, nodesize = 100, ntree = 1)
+rf <- randomForest(target ~ . - id, train, nodesize = 10000, ntree = 1)
 
 trainx <- train[, -c(1,2)]
 trainy <- train[, 2]
