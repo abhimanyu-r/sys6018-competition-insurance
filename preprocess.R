@@ -25,7 +25,7 @@ fill_missing <- function(dataset, mean = T){
       if(mean){
         dataset[dataset[[name]] == -1, name] <- mean(dataset[[name]])  
       }else{
-        dataset[dataset[[name]] == -1, name] <- mean(dataset[[name]])
+        dataset[dataset[[name]] == -1, name] <- median(dataset[[name]])
       }
     }
   }
@@ -46,9 +46,9 @@ num_nas <- apply(train, 2, function(x){return(sum(x == -1))})
 # Potentially drop ps_reg_03, ps_car_03_cat, ps_car_05_cat
 
 # Drop high density of missing values
-train2 <- train[, num_nas < 10000] 
+train2 <- train[, num_nas < 10000]
 
-# Fill in missing values 
+# Fill in missing values
 train3 <- fill_missing(train2)
 
 # See how many missing variables have per category
@@ -62,6 +62,9 @@ rm(train2)
 # Write the current clean file to csv for quicker reads in the future
 write_csv(train3, "clean_train.csv")
 
+# Read in the clean data
+train3 <- read_csv("clean_train.csv")
+
 # Create initial linear model to try and find the predictors with
 # multicollinearity
 mod1 <- lm(target ~ . - id, train3, singular.ok = F)
@@ -72,4 +75,19 @@ alias(lm(target ~ . - id, train3))
 # Perfect multicollinearity in ps_ind_09_bin and ps_ind_14
 
 # Drop those two columns
-train4 <- train3[, -c("ps_ind_09_bin", "ps_ind_14")]
+train3$ps_ind_09_bin <- NULL
+train3$ps_ind_14 <- NULL
+
+# Make a new model without pure multicollinearity 
+mod2 <- lm(target ~ . - id, train3, singular.ok = F)
+
+# Remove columns with high VIF
+which(vif(mod2) > 3)
+
+# Remove those variables
+train3$ps_ind_16_bin <- NULL
+train3$ps_ind_18_bin <- NULL
+train3$ps_car_13 <- NULL
+
+# Write the current clean file to csv for quicker reads in the future
+write_csv(train3, "clean_train.csv")
