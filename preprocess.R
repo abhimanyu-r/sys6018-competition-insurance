@@ -42,11 +42,12 @@ exploratory <- function(){
   
   # See how many missing variables have per category
   num_nas <- apply(train, 2, function(x){return(sum(x == -1))})
+  num_nas 
   
   # Potentially drop ps_reg_03, ps_car_03_cat, ps_car_05_cat
   
-  # Drop high density of missing values
-  train2 <- train[, num_nas < 10000]
+  # Drop high density of missing values, more than 10%
+  train2 <- train[, num_nas < as.integer(nrow(train) * 0.1)]
   
   # Fill in missing values
   train3 <- fill_missing(train2, mean = F)
@@ -107,3 +108,26 @@ exploratory <- function(){
   write_csv(train3, "clean_train.csv")
   rm(train3)
 }
+
+# Gets a stratified sample of the data roughly maintaining class distribution
+stratified.sample <- function(data, size, seed = 0){
+  set.seed(seed)
+  
+  # Get class proportion
+  prop <- sum(data$target == 1)/nrow(data)
+  
+  # Split the data into positive and negative data
+  positived_data <- data[data$target == 1, ]
+  negative_data <- data[data$target == 0, ]
+  neg_size <- as.integer(size * (1-prop))
+  pos_size <- size - neg_size
+  
+  # Get random samples
+  pos_sample <- sample(1:nrow(positived_data), size = pos_size)
+  neg_sample <- sample(1:nrow(negative_data), size = neg_size)
+  
+  return(rbind(positived_data[pos_sample, ], negative_data[neg_sample, ]))
+}
+
+l <-  stratified.sample(train2, 10000)
+l
