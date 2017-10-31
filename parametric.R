@@ -5,7 +5,8 @@ library(stringr)
 source("Gini.R")
 source("preprocess.R")
 
-train <- read_csv("clean_train.csv")
+train <- read_csv("train.csv")
+train <- exploratory(train)
 for(name in colnames(train)){
   if(str_detect(name, "cat")){
     train[[name]] <- as.factor(train[[name]])
@@ -114,5 +115,97 @@ results <- data.frame(id = id, target = preds)
 # Write the results
 write_csv(x = results, path = "parametric10-31-17.csv")
 
+# KAGGLE: 0.249
+
 # Clean up environment
 rm(results, test, train, corrected_preds, id)
+
+
+# Trim --------------------------------------------------------------------
+
+train_data <- stratified.sample(train, 10000)
+
+mod <- glm(target ~ . - id, train_data, family = "binomial")
+
+# Remove variables one by one by largest p-value
+summary(mod)
+
+mod2 <- glm(target ~ . - id - ps_ind_04_cat - ps_ind_13_bin -
+              ps_ind_10_bin - ps_calc_10 - ps_ind_12_bin -
+              ps_calc_13 - ps_calc_19_bin - ps_calc_05 - ps_ind_11_bin - 
+              ps_calc_01 - ps_ind_01 - ps_calc_15_bin - ps_calc_12 - 
+              ps_ind_08_bin - ps_calc_18_bin - ps_calc_06 -
+              ps_ind_17_bin - ps_car_13 - ps_calc_16_bin - 
+              ps_car_10_cat - ps_ind_02_cat - ps_calc_17_bin - 
+              ps_calc_04 - ps_calc_08 - ps_reg_02 - 
+              ps_calc_20_bin - ps_calc_02 - ps_car_11 - 
+              ps_calc_11 - ps_car_02_cat - ps_car_04_cat - 
+              ps_car_12 - ps_reg_01 - ps_calc_03 - 
+              ps_car_01_cat - ps_ind_07_bin - ps_ind_18_bin - 
+              ps_calc_07 - ps_car_08_cat - ps_ind_03 - 
+              ps_ind_15 - ps_car_06_cat - ps_car_14, 
+            train_data, family = "binomial")
+
+coefs <- summary(mod2)$coefficients
+coefs[order(coefs[,4]),]
+summary(mod2)
+
+# Build the model on the full dataset
+train <- read_csv("train.csv")
+train <- exploratory(train)
+for(name in colnames(train)){
+  if(str_detect(name, "cat")){
+    train[[name]] <- as.factor(train[[name]])
+  }
+}
+
+# Preprocess test in the same way as train
+test <- read_csv("test.csv")
+test <- fill_missing(test, mean = F)
+for(name in colnames(test)){
+  if(str_detect(name, "cat")){
+    test[[name]] <- as.factor(test[[name]])
+  }
+}
+
+# Use sample to get our ids
+sample <- read_csv("sample_submission.csv")
+
+# Get the id for our sample data
+id <- sample$id
+
+# Clean up sample
+rm(sample)
+
+modfinal <- glm(target ~ . - id - ps_ind_04_cat - ps_ind_13_bin -
+              ps_ind_10_bin - ps_calc_10 - ps_ind_12_bin -
+              ps_calc_13 - ps_calc_19_bin - ps_calc_05 - ps_ind_11_bin - 
+              ps_calc_01 - ps_ind_01 - ps_calc_15_bin - ps_calc_12 - 
+              ps_ind_08_bin - ps_calc_18_bin - ps_calc_06 -
+              ps_ind_17_bin - ps_car_13 - ps_calc_16_bin - 
+              ps_car_10_cat - ps_ind_02_cat - ps_calc_17_bin - 
+              ps_calc_04 - ps_calc_08 - ps_reg_02 - 
+              ps_calc_20_bin - ps_calc_02 - ps_car_11 - 
+              ps_calc_11 - ps_car_02_cat - ps_car_04_cat - 
+              ps_car_12 - ps_reg_01 - ps_calc_03 - 
+              ps_car_01_cat - ps_ind_07_bin - ps_ind_18_bin - 
+              ps_calc_07 - ps_car_08_cat - ps_ind_03 - 
+              ps_ind_15 - ps_car_06_cat, 
+            train, family = "binomial")
+
+# Trim the model
+modfinal <- trim(modfinal)
+
+# Make the predictions
+preds <- predict(modfinal, newdata = test, type = "response")
+
+# Create the results
+results <- data.frame(id = id, target = preds)
+
+# Write the results
+write_csv(x = results, path = "parametric10-31-17.csv")
+
+# KAGGLE: 0.217
+
+# Clean up environment
+rm(results, test, train, id)
