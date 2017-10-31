@@ -13,6 +13,7 @@ for(name in colnames(train)){
 }
 
 # Due to performance constraints, we are limited to the validation set approach
+set.seed(1)
 indices <- sample(1:nrow(train), size = as.integer(0.5 * nrow(train)))
 train.data <- train[indices, -1]
 test.target <- train[-indices, 2]
@@ -111,7 +112,7 @@ preds <- predict(model.full, newdata = test, type = "response")
 results <- data.frame(id = id, target = preds)
 
 # Write the results
-write_csv(x = results, path = "parametric.csv")
+write_csv(x = results, path = "parametric10-31-17.csv")
 
 # Clean up environment
 rm(results, test, train, corrected_preds, id)

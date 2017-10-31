@@ -2,7 +2,7 @@
 
 library(readr) # For reading in the data
 library(stringr) # For string contains operator
-# library(car) # For VIF functions
+library(car) # For VIF functions
 
 
 # Helper Functions --------------------------------------------------------
@@ -36,59 +36,74 @@ fill_missing <- function(dataset, mean = T){
 
 # Exploratory -------------------------------------------------------------
 
-
-# # Read in the train data
-# train <- read_csv("train.csv")
-# 
-# # See how many missing variables have per category
-# num_nas <- apply(train, 2, function(x){return(sum(x == -1))})
-# 
-# # Potentially drop ps_reg_03, ps_car_03_cat, ps_car_05_cat
-# 
-# # Drop high density of missing values
-# train2 <- train[, num_nas < 10000]
-# 
-# # Fill in missing values
-# train3 <- fill_missing(train2, mean = F)
-# 
-# # See how many missing variables have per category
-# num_nas2 <- apply(train3, 2, function(x){return(sum(x == -1))})
-# # Now we have no NA's in our dataset
-# 
-# # Clean up intermediate data sets
-# rm(train)
-# rm(train2)
-# 
-# # Write the current clean file to csv for quicker reads in the future
-# write_csv(train3, "clean_train.csv")
-# 
-# # Read in the clean data
-# train3 <- read_csv("clean_train.csv")
-# 
-# # Create initial linear model to try and find the predictors with
-# # multicollinearity
-# mod1 <- lm(target ~ . - id, train3, singular.ok = F)
-# # We have perfect multicollinearity in the data
-# 
-# # Use the alias function to figure out the problems
-# alias(lm(target ~ . - id, train3))
-# # Perfect multicollinearity in ps_ind_09_bin and ps_ind_14
-# 
-# # Drop those two columns
-# train3$ps_ind_09_bin <- NULL
-# train3$ps_ind_14 <- NULL
-# 
-# # Make a new model without pure multicollinearity 
-# mod2 <- lm(target ~ . - id, train3, singular.ok = F)
-# 
-# # Remove columns with high VIF
-# which(vif(mod2) > 3)
-# 
-# # Remove those variables
-# train3$ps_ind_16_bin <- NULL
-# train3$ps_ind_18_bin <- NULL
-# train3$ps_car_13 <- NULL
-# 
-# # Write the current clean file to csv for quicker reads in the future
-# write_csv(train3, "clean_train.csv")
-# rm(train3)
+exploratory <- function(){
+  # Read in the train data
+  train <- read_csv("train.csv")
+  
+  # See how many missing variables have per category
+  num_nas <- apply(train, 2, function(x){return(sum(x == -1))})
+  
+  # Potentially drop ps_reg_03, ps_car_03_cat, ps_car_05_cat
+  
+  # Drop high density of missing values
+  train2 <- train[, num_nas < 10000]
+  
+  # Fill in missing values
+  train3 <- fill_missing(train2, mean = F)
+  
+  # See how many missing variables have per category
+  num_nas2 <- apply(train3, 2, function(x){return(sum(x == -1))})
+  # Now we have no NA's in our dataset
+  
+  # Clean up intermediate data sets
+  rm(train)
+  rm(train2)
+  
+  # Write the current clean file to csv for quicker reads in the future
+  write_csv(train3, "clean_train.csv")
+  
+  # Read in the clean data
+  train3 <- read_csv("clean_train.csv")
+  
+  # Create initial linear model to try and find the predictors with
+  # multicollinearity
+  mod1 <- lm(target ~ . - id, train3, singular.ok = F)
+  # We have perfect multicollinearity in the data
+  
+  # Use the alias function to figure out the problems
+  alias(lm(target ~ . - id, train3))
+  # Perfect multicollinearity in ps_ind_09_bin and ps_ind_14
+  
+  # Drop those two columns
+  train3$ps_ind_09_bin <- NULL
+  train3$ps_ind_14 <- NULL
+  
+  # Make a new model without pure multicollinearity
+  mod2 <- lm(target ~ . - id, train3, singular.ok = F)
+  
+  # Remove columns with high VIF
+  vif(mod2)
+  
+  # Remove those variables
+  train3$ps_ind_16_bin <- NULL
+  
+  # Try again
+  mod2 <- lm(target ~ . - id, train3, singular.ok = F)
+  
+  # Remove columns with high VIF
+  vif(mod2)
+  
+  train3$ps_car_13 <- NULL
+  
+  # One more time
+  # Try again
+  mod2 <- lm(target ~ . - id, train3, singular.ok = F)
+  
+  # Remove columns with high VIF
+  vif(mod2)
+  
+  
+  # Write the current clean file to csv for quicker reads in the future
+  write_csv(train3, "clean_train.csv")
+  rm(train3)
+}
