@@ -55,7 +55,6 @@ exploratory <- function(data, mean = F){
   train3$ps_ind_14 <- NULL
   
   # Clean up intermediate data sets
-  rm(train)
   rm(train2)
 
   return(train3)
