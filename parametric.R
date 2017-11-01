@@ -121,7 +121,77 @@ write_csv(x = results, path = "parametric10-31-17.csv")
 rm(results, test, train, corrected_preds, id)
 
 
-# Trim --------------------------------------------------------------------
+
+
+
+# No multicollinearity removed --------------------------------------------
+
+train <- read_csv("train.csv")
+train2 <- exploratory(train)
+
+for(name in colnames(train2)){
+  if(str_detect(name, "cat")){
+    train2[[name]] <- as.factor(train2[[name]])
+  }
+}
+
+
+# Create a full model
+
+mod <- glm(target ~ . - id, train2, family = "binomial")
+
+# Extract only signficicant coefficients
+data.frame(summary(mod)$coef[summary(mod)$coef[,4] <= .05, 4])
+
+mod2 <- glm(target ~ ps_ind_01 + ps_ind_02_cat + ps_ind_03 + 
+              ps_ind_04_cat + ps_ind_05_cat + ps_ind_07_bin + 
+              ps_ind_08_bin + ps_ind_15 + ps_ind_16_bin +
+              ps_ind_17_bin + ps_reg_01 + ps_reg_02 + 
+              ps_car_01_cat + ps_car_04_cat + ps_car_06_cat + 
+              ps_car_07_cat + ps_car_09_cat + ps_car_11_cat + 
+              ps_car_12 + ps_car_13 + ps_car_14 + ps_car_15, train2, 
+            family = "binomial")
+
+# All coefficients signficant
+summary(mod2)
+
+# Trim the model
+mod2 <- trim(mod2)
+
+# Preprocess test in the same way as train
+test <- read_csv("test.csv")
+test <- fill_missing(test, mean = F)
+for(name in colnames(test)){
+  if(str_detect(name, "cat")){
+    test[[name]] <- as.factor(test[[name]])
+  }
+}
+
+# Use sample to get our ids
+sample <- read_csv("sample_submission.csv")
+
+# Get the id for our sample data
+id <- sample$id
+
+# Clean up sample
+rm(sample)
+
+# Make the predictions
+preds <- predict(mod2, newdata = test, type = "response")
+
+# Create the results
+results <- data.frame(id = id, target = preds)
+
+# Write the results
+write_csv(x = results, path = "parametric11-1-17.csv")
+
+# KAGGLE: 0.249
+
+# Clean up environment
+rm(results, test, train, corrected_preds, id)
+
+
+# Sampled data---------------------------------------------------------------
 
 train_data <- stratified.sample(train, 10000)
 
