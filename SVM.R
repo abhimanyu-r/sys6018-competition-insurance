@@ -10,17 +10,22 @@ for(name in colnames(train)){
   if(str_detect(name, "cat")){
     train[[name]] <- as.factor(train[[name]])}}
 
-# Due to performance constraints, we are limited to the validation set approach
-indices <- sample(1:nrow(train), size = as.integer(0.25 * nrow(train)))
-train.data <- train[indices, -1]
-test.target <- train[-indices, 2]
-test.data <- train[-indices, -c(1,2)]
-rm(indices)
 
-svm.model.poly = svm(target~.,data=train.data,kernel='polynomial',degree=3,cost=1)
+train.data = stratified.sample(train,10000)
+train.data$id = NULL
 
-predict(svm.model.poly,test.data)
+#------------------------------------------
+#POLY
+svm.model.poly = svm(target~.,data=train.data,kernel='polynomial',degree=3,cost=1,na.action = na.exclude)
 
+summary(svm.model.poly)
+
+test = read.csv('test.csv')
+for(name in colnames(test)){
+  if(str_detect(name, "cat")){
+    test[[name]] <- as.factor(test[[name]])}}
+preds = predict(svm.model.poly,test[2:58])
+
+#------------------------------------------
+#RAD
 svm.model.rad = svm(target~.,data=train.data,kernel='radial',gamma=1,cost=1)
-
-
