@@ -327,7 +327,7 @@ result1_df = pd.DataFrame(data = result1)
 result1_df.to_csv("predictionsRF11-1-17.csv", index=False)
 ```
 
-** KAGGLE SCORE: 0.259 **
+**KAGGLE SCORE: 0.259**
 
 ## Rerun on clean dataset
 
@@ -380,4 +380,4 @@ result1_df = pd.DataFrame(data = result1)
 result1_df.to_csv("predictionsRF11-1-17.csv", index=False)
 ```
 
-** KAGGLE SCORE: 0.250**
+**KAGGLE SCORE: 0.250**
