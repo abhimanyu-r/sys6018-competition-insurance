@@ -1,5 +1,6 @@
-*.csv
-/"local csv"/
+train.csv
+test.csv
+sample_submission.csv
 .RDataTmp
 .Rhistory
 .RData

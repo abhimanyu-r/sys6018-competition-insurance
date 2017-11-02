@@ -5,7 +5,16 @@ library(stringr)
 source("Gini.R")
 source("preprocess.R")
 
-train <- read_csv("train.csv")
+
+
+# First try ---------------------------------------------------------------
+
+# First, we will take a pretty standard approach. Using a validation set 
+# approach, remove any variables that are highly multicollinear (this data
+# is pre-stored in a seperate CSV). Finally do batch variable removal until
+# we have all significant variables.
+
+train <- read_csv("clean_train.csv")
 train <- exploratory(train)
 for(name in colnames(train)){
   if(str_detect(name, "cat")){
@@ -113,7 +122,7 @@ preds <- predict(model.full, newdata = test, type = "response")
 results <- data.frame(id = id, target = preds)
 
 # Write the results
-write_csv(x = results, path = "parametric10-31-17.csv")
+write_csv(x = results, path = "Predictions/parametric10-31-17.csv")
 
 # KAGGLE: 0.249
 
@@ -122,9 +131,17 @@ rm(results, test, train, corrected_preds, id)
 
 
 
-
+##################################################################
+############ Best model below ####################################
+##################################################################
 
 # No multicollinearity removed --------------------------------------------
+
+# Since multicollinearity shouldn't affect predictive power,
+# we run the above analysis without removing highly collinear 
+# variables (we still remove the perfectly multicollnear ones).
+# Further, we do not use a train/test, we just fit on the full
+# train set and batch remove until we have all significant variables.
 
 train <- read_csv("train.csv")
 train2 <- exploratory(train)
@@ -183,15 +200,19 @@ preds <- predict(mod2, newdata = test, type = "response")
 results <- data.frame(id = id, target = preds)
 
 # Write the results
-write_csv(x = results, path = "parametric11-1-17.csv")
+write_csv(x = results, path = "Predictions/parametric11-1-17.csv")
 
-# KAGGLE: 0.249
+# BEST MODEL
+# KAGGLE: 0.253
 
 # Clean up environment
 rm(results, test, train, corrected_preds, id)
 
 
 # Sampled data---------------------------------------------------------------
+
+# For out final approach, we take a stratified sample of the data that is small
+# enough to allow for more rigorous approaches. We chose to do backwards elimination
 
 train_data <- stratified.sample(train, 10000)
 
@@ -273,7 +294,7 @@ preds <- predict(modfinal, newdata = test, type = "response")
 results <- data.frame(id = id, target = preds)
 
 # Write the results
-write_csv(x = results, path = "parametric10-31-17.csv")
+write_csv(x = results, path = "Predictions/parametric10-31-17.csv")
 
 # KAGGLE: 0.217
 
