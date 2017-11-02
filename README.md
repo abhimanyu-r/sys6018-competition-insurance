@@ -21,7 +21,7 @@ The important files in this repository are the following:
 
  * preprocess.R: Script that contains some of the preprocessing done in R, especially for the parametric approach. Contains functionality to fill in missing values, drop columns that are perfectly multicolinear, and create stratified samples of the data.
  
- * Non Parametric.ipynb: Contains the random forest analysis done in python (the reason for python is detailed in the next section)
+ * Non Parametric.ipynb: Contains the random forest analysis done in python (the reason for python is detailed in the next section). This file is also included as both an HTML and markdown file for easy viewing without having to run jupyter.
  
  * parametric.R: file that contains code use for our paramtetric approach.
 
