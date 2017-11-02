@@ -70,6 +70,8 @@ normalized.gini.index(test.target$target, preds)
 rm(test.data, test.target, train, train.data, preds)
 
 # Build the model on the full dataset
+
+# Clean data has variables with high multicollinearity removed
 train <- read_csv("clean_train.csv")
 for(name in colnames(train)){
   if(str_detect(name, "cat")){

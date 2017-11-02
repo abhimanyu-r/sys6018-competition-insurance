@@ -36,7 +36,7 @@ fill_missing <- function(dataset, mean = T){
 
 # Exploratory -------------------------------------------------------------
 
-exploratory <- function(data, mean = F){
+preprocess <- function(data, mean = F, drop_na = T, threshold = 0.1){
 
   # See how many missing variables have per category
   num_nas <- apply(data, 2, function(x){return(sum(x == -1))})
@@ -45,7 +45,9 @@ exploratory <- function(data, mean = F){
   # Potentially drop ps_reg_03, ps_car_03_cat, ps_car_05_cat
   
   # Drop high density of missing values, more than 10%
-  train2 <- data[, num_nas < as.integer(nrow(data) * 0.1)]
+  if(drop_na){
+    train2 <- data[, num_nas < as.integer(nrow(data) * threshold)]
+  }
   
   # Fill in missing values
   train3 <- fill_missing(train2, mean = mean)
@@ -54,8 +56,7 @@ exploratory <- function(data, mean = F){
   train3$ps_ind_09_bin <- NULL
   train3$ps_ind_14 <- NULL
   
-  # Clean up intermediate data sets
-  rm(train)
+  # Clean up intermediate data set
   rm(train2)
 
   return(train3)
