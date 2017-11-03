@@ -63,11 +63,13 @@ First we are going to just try and fit a random forest to the raw train data and
 
 
 ```python
+# Read in the raw train set
 train = pd.read_csv("train.csv")
 ```
 
 
 ```python
+# Split into response and predictors
 y = train["target"]
 x = train.drop(["id", "target"], axis = 1)
 ```
@@ -86,6 +88,7 @@ x.shape
 
 
 ```python
+# Create a baseline model
 clf = RandomForestClassifier(n_estimators=500, max_depth=2, random_state=0, n_jobs=-1, max_features=1, oob_score=True)
 ```
 
@@ -96,6 +99,7 @@ model = clf.fit(x, y)
 
 
 ```python
+# Read in the test set
 test = pd.read_csv("test.csv")
 ids = test["id"]
 test = test.drop(["id"], axis = 1)
@@ -103,12 +107,14 @@ test = test.drop(["id"], axis = 1)
 
 
 ```python
+# Extract the probabilities
 probs = clf.predict_proba(test)
 probs_final = [x[1] for x in probs]
 ```
 
 
 ```python
+# Create and write the results
 result1 = {'id':ids, 'target':probs_final}
 result1_df = pd.DataFrame(data = result1)
 
@@ -151,28 +157,39 @@ Next we get a sense of some of the important predictors. This is more or less ex
 
 
 ```python
+# Separate the x and the y
 y_kfold = np.array(train["target"])
 x_kfold = np.array(train.drop(["id", "target"], axis = 1))
+
+# Split into three folds
 kf = StratifiedKFold(n_splits=3)
 kf.get_n_splits(x_kfold, y_kfold)
+
+# Create a random forest that also store importance
 forest = ExtraTreesClassifier(n_estimators=500, max_depth=2, random_state=0, n_jobs=-1, max_features="log2")
 
 ginis = []
 
+# List to store how many times a variable shows up in the top 20 most important variables
 ratio = [0]*57
 
+# Iterate over the 3 folds 
 for train_index, test_index in kf.split(x_kfold, y_kfold):
     X_train, X_test = x_kfold[train_index], x_kfold[test_index]
     y_train, y_test = y_kfold[train_index], y_kfold[test_index]
     
+    # Fit a model
     model = forest.fit(X_train, y_train)
     probs = forest.predict_proba(X_test)
     probs_final = [x[1] for x in probs]
+    
+    # Extract the importances
     importances = forest.feature_importances_
     std = np.std([tree.feature_importances_ for tree in forest.estimators_],
                  axis=0)
     indices = np.argsort(importances)[::-1]
 
+    # If a variable is in the top 20 importances, increase its value in the ratio list
     index = 0
     for f in range(X_train.shape[1]):
         # print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
@@ -219,14 +236,19 @@ We now dive into our actual cross validation. We will stick to 3-fold cross vali
 
 
 ```python
+# Split x and y
 y_kfold = np.array(train["target"])
 x_kfold = np.array(train.drop(["id", "target"], axis = 1))
+
+# Split into folds
 kf = StratifiedKFold(n_splits=3)
 kf.get_n_splits(x_kfold, y_kfold)
 forest = RandomForestClassifier(n_estimators=500, max_depth=12, random_state=0, n_jobs=4, max_features="log2")
 
 ginis = []
 index = 1
+
+# Iterate over folds to cross validate on various parameters
 for train_index, test_index in kf.split(x_kfold, y_kfold):
     X_train, X_test = x_kfold[train_index], x_kfold[test_index]
     y_train, y_test = y_kfold[train_index], y_kfold[test_index]
@@ -293,11 +315,13 @@ Using what we have found, make a prediction tree using the raw, uncleaned data.
 
 
 ```python
+# Read in train data
 train = pd.read_csv("train.csv")
 ```
 
 
 ```python
+# Separate predictors and response
 y = train["target"]
 x = train.drop(["id", "target"], axis = 1)
 ```
@@ -306,12 +330,14 @@ Using the best paramaters found using CV.
 
 
 ```python
+# Create and fit the tree using best parameters
 clf_test = RandomForestClassifier(n_estimators=500, max_depth=11, random_state=0, n_jobs=-1, max_features="log2")
 clf_test.fit(x, y)
 ```
 
 
 ```python
+# Predict using the test set
 test = pd.read_csv("test.csv")
 ids = test["id"]
 test = test.drop(["id"], axis = 1)
@@ -321,13 +347,14 @@ probs_final = [x[1] for x in probs]
 
 
 ```python
+# Write the results
 result1 = {'id':ids, 'target':probs_final}
 result1_df = pd.DataFrame(data = result1)
 
 result1_df.to_csv("predictionsRF11-1-17.csv", index=False)
 ```
 
-**KAGGLE SCORE: 0.259**
+** KAGGLE SCORE: 0.259 **
 
 ## Rerun on clean dataset
 
@@ -335,17 +362,20 @@ Now we try again but use the cleaned dataset with NA's imputed with the median.
 
 
 ```python
+# Read in the train data
 train = pd.read_csv("clean_data_rf.csv")
 ```
 
 
 ```python
+# Split the predictor and response
 y = train["target"]
 x = train.drop(["id", "target"], axis = 1)
 ```
 
 
 ```python
+# Create and fit the random forest using best parameters from above
 clf_test = RandomForestClassifier(n_estimators=500, max_depth=11, random_state=0, n_jobs=-1, max_features="log2")
 clf_test.fit(x, y)
 ```
@@ -364,6 +394,7 @@ clf_test.fit(x, y)
 
 
 ```python
+# Read in the test data and predict
 test = pd.read_csv("test.csv")
 ids = test["id"]
 test = test.loc[:, train.columns]
@@ -374,10 +405,11 @@ probs_final = [x[1] for x in probs]
 
 
 ```python
+# Write the results
 result1 = {'id':ids, 'target':probs_final}
 result1_df = pd.DataFrame(data = result1)
 
 result1_df.to_csv("predictionsRF11-1-17.csv", index=False)
 ```
 
-**KAGGLE SCORE: 0.250**
+** KAGGLE SCORE: 0.250**
