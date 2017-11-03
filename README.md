@@ -23,7 +23,7 @@ The important files in this repository are the following:
  
  * Non Parametric.ipynb: Contains the random forest analysis done in python (the reason for python is detailed in the next section). This file is also included as both an HTML and markdown file for easy viewing without having to run jupyter.
  
- * parametric.R: file that contains code use for our paramtetric approach.
+ * parametric.R: file that contains code use for our paramtetric approach (The file logistic.R contains some exploratory analysis on the logistic, but the final approach is contained in parametric.R).
 
 ## A preface on performance
 
